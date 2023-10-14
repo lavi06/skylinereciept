@@ -1,0 +1,7 @@
+streamlit==1.12.0
+DateTime==4.4
+num2words
+requests==2.24.0
+pandas==1.4.3
+fpdf
+
