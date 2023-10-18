@@ -1,28 +1,22 @@
 import streamlit as st
-# import streamlit_authenticator as stauth
 from datetime import date
-# import yaml
-# from yaml.loader import SafeLoader
-# from CREATEPDF import pdf_first_page
-# from airtable import *
 from num2words import num2words
 import datetime
 import requests, json
 import pandas as pd
-# import numpy as np
 import time
 from fpdf import FPDF
-# import matplotlib.pyplot as plt
-# import altair as alt
-# from pylab import title, figure, xlabel, ylabel, xticks, bar, legend, axis, savefig
-# from pypdf import PdfMerger
 
+#####################
+#### VERSION 2.0 ####
+#####################
 
 
 ################################################################################
 
 passcode_key = {
-    "demo1" : "Demo User"
+    "ak1" : "Ashish Goyal",
+    "hg1" : "Himanshu Goyal"
 }
 
 ################################################################################
@@ -101,7 +95,7 @@ def create_record(token, json_data):
 ## CREATEPDF.py
 border = 0
 
-def section(pdf,amount,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice):
+def section(pdf,_amount,gst,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice):
 
     pdf.set_font('', '', 10)
 
@@ -122,20 +116,20 @@ def section(pdf,amount,amount_in_words,name,flat_number,flat_config,mode,referen
     pdf.cell(35, 5, ln = 1, border = border)
 
 
-    text = f"Received with thanks a sum of Rs {amount}/- in words {amount_in_words} from {name} on account of Skyline Elevate, PR7, Zirakpur (Pb.)"
+    text = f"Received with thanks a sum of Rs {amount + gst}/- in words {amount_in_words} from {name} on account of Skyline Elevate, PR7, Zirakpur (Pb.)"
     
     pdf.multi_cell(0,5, txt = text, border = border)
 
     pdf.cell(20, 5, ln = 1, border = border)
 
     pdf.cell(25, 7, txt = "Amount", ln = 0, border = border)
-    pdf.cell(30, 7, txt = "Rs " + str(amount*0.95) + "/-" , ln = 0, border = 1, align = 'L')
+    pdf.cell(30, 7, txt = "Rs " + str(_amount) + "/-" , ln = 0, border = 1, align = 'L')
 
 
     pdf.cell(45, 7, ln = 1, border = border)
 
     pdf.cell(25, 7, txt = "GST", ln = 0, border = border)
-    pdf.cell(30, 7, txt = "Rs " + str(amount*0.05) + "/-", ln = 1, border = 1, align = 'L')
+    pdf.cell(30, 7, txt = "Rs " + str(gst) + "/-", ln = 1, border = 1, align = 'L')
 
     pdf.cell(25, 7, txt = "Flat", ln = 0, border = border)
     pdf.cell(30, 7, txt = f"{flat_number}", ln = 0, border = 1, align = 'L')
@@ -176,11 +170,10 @@ def section(pdf,amount,amount_in_words,name,flat_number,flat_config,mode,referen
     pdf.cell(95, 10, txt = text, ln = 1, border = border)
 
 
-
     return pdf
 
 
-def pdf_first_page(amount,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice):
+def pdf_first_page(_amount,gst,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice):
 
     pdf = FPDF(orientation = 'P', unit = 'mm', format='A4')
 
@@ -190,13 +183,15 @@ def pdf_first_page(amount,amount_in_words,name,flat_number,flat_config,mode,refe
     pdf.set_margins(20,20)
 
 
-    pdf.rect(x = 10, y = 10 , w = 190, h= 135, style = "")
-    pdf.rect(x = 10, y = 145, w = 190, h= 135, style = "")
+    pdf.rect(x = 10, y = 10 , w = 190, h= 130, style = "")
+    pdf.rect(x = 10, y = 145, w = 190, h= 130, style = "")
 
     pdf.image('logo.png', x = 25, y = 20, w = 75, h = 25, type = '')
 
     pdf.set_fill_color(r = 57, g = 107, b = 109)
     pdf.rect(x = 30, y = 45, w = 150, h= 1.5, style = "F")
+
+    pdf.set_fill_color(r = 57, g = 107, b = 109)
 
     pdf.set_font('', 'I', 6)
     text = ""
@@ -230,7 +225,7 @@ def pdf_first_page(amount,amount_in_words,name,flat_number,flat_config,mode,refe
     ########################################################################
     # pdf.set_font('', '', 10)
 
-    pdf = section (pdf,amount,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice)
+    pdf = section (pdf,_amount,gst,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice)
 
     ############################
     # pdf.cell(95, 5, txt = "-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------", ln = 1, border = border)
@@ -240,6 +235,8 @@ def pdf_first_page(amount,amount_in_words,name,flat_number,flat_config,mode,refe
 
     pdf.set_fill_color(r = 57, g = 107, b = 109)
     pdf.rect(x = 30, y = 175, w = 150, h= 1.5, style = "F")
+
+    pdf.set_fill_color(r = 57, g = 107, b = 109)
 
     pdf.set_font('', '', 8)
     text = ""
@@ -262,7 +259,7 @@ def pdf_first_page(amount,amount_in_words,name,flat_number,flat_config,mode,refe
     pdf.cell(95, 5, ln = 0, border = border)
     pdf.cell(95, 5,txt = "www.skylineelevate.com", ln = 1, border = border)
 
-    pdf = section(pdf,amount,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice)
+    pdf = section(pdf,_amount,gst,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice)
 
     pdf.set_font('', 'I', 6)
     text = ""
@@ -280,11 +277,9 @@ def pdf_first_page(amount,amount_in_words,name,flat_number,flat_config,mode,refe
 # pdf_first_page(amount,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice)
 # input("---")
 
-
 ################################################################################
 
 ## Downloading logo from AWS
-
 try:
     url = "https://skylineelevate.s3.ap-south-1.amazonaws.com/logo.png"
     image = requests.get(url)
@@ -330,6 +325,7 @@ except:
 # )
 
 # auth_name, authentication_status, username = authenticator.login('Login', 'main')
+
 auth_name = "Admin"
 authentication_status = True
 
@@ -342,6 +338,16 @@ authentication_status = True
 # elif authentication_status is None:
 #     st.warning('Please enter your username and password')
 ###################
+###################
+###################
+###################
+
+
+
+
+# emojis: https://www.webfx.com/tools/emoji-cheat-sheet/
+st.set_page_config(page_title="Skyline Elevate Reciepts", page_icon=":bar_chart:")
+# st.image("Logo.png", caption=None, width=250, use_column_width=None, clamp=False, channels="RGB", output_format="auto")
 
 
 st.session_state.disabled = True
@@ -369,6 +375,8 @@ if "db" not in st.session_state:
     master_data = fetch_records(st.session_state.token, st.session_state.columns)
 
     st.session_state.invoice = "Sky-" + f"{len(master_data.index)+1:03}"
+    st.session_state.invoice_num = len(master_data.index)
+
     st.session_state.master = master_data
     st.session_state["selected_flat"] = 101
 
@@ -399,6 +407,8 @@ def invoice_generated():
             show_db()
 
             st.session_state.invoice = "Sky-" + f"{len(master_data.index)+1:03}"
+            st.session_state.invoice_num = st.session_state.invoice_num + 1
+
             st.session_state.filename = f'Skyline-{st.session_state.selected_flat}-{st.session_state.invoice}.pdf'
 
             st.session_state.success = "Yes"
@@ -410,6 +420,7 @@ def invoice_generated():
 def invoice_downloaded():
     if not st.session_state.disabled:
         st.success("Invoice Downloaded")    
+
 
 
 if authentication_status:
@@ -426,6 +437,11 @@ if authentication_status:
 
     amount = left.number_input("Amount", value = 0 , key = "amount")
     invoicename   = right.text_input("Name"   , value = "", key = "invoicename")
+
+
+    _amount = round(amount/1.05*1)
+    gst = (amount-_amount)
+
 
     amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
     st.write(f"*{amount_in_words}* Only")
@@ -490,9 +506,9 @@ if authentication_status:
         elif st.session_state.success == "Yes":
             st.success("Invoice Generated")
             date_invoice = str(date.today())
-            pdf = pdf_first_page(amount, amount_in_words,invoicename, flat_num, flat_config, mode, reference, st.session_state.invoice, date_invoice)
+            pdf = pdf_first_page(_amount, gst, amount_in_words, invoicename, flat_num, flat_config, mode, reference, f"Sky-{st.session_state.invoice_num:03}", date_invoice)
 
-            st.session_state.filename = f'Skyline-{flat_num}-{st.session_state.invoice}.pdf'
+            st.session_state.filename = f'Skyline-{flat_num}-Sky-{st.session_state.invoice_num:03}.pdf'
             st.session_state.disabled = False
             st.session_state.pdf = pdf
 
@@ -506,11 +522,3 @@ if authentication_status:
 
     st.write(f"Total Reciepts for Flat-{flat_num}")
     st.write(st.session_state.db)
-
-
-
-
-
-
-
-
