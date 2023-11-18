@@ -116,7 +116,7 @@ def section(pdf,_amount,gst,amount_in_words,name,flat_number,flat_config,mode,re
     pdf.cell(35, 5, ln = 1, border = border)
 
 
-    text = f"Received with thanks a sum of Rs {_amount + gst}/- in words Rs {amount_in_words} Only from {name} on account of Skyline Elevate, PR7, Zirakpur (Pb.)"
+    text = f"Received with thanks a sum of Rs {_amount + gst}/- in words Rs {amount_in_words} Only from {name} on account of Skyline Developers"
     
     pdf.multi_cell(0,5, txt = text, border = border)
 
