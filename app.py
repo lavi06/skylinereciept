@@ -471,7 +471,7 @@ if authentication_status:
     ###################
     left, right = st.columns(2)
     with left:
-        mode = st.selectbox("Mode of Payment", ["RTGS","DD","Cheque","NEFT"], key = "mode")
+        mode = st.selectbox("Mode of Payment", ["RTGS","DD","Cheque","NEFT","IMPS"], key = "mode")
     with right: 
         reference = st.text_input("Transaction Reference No.", max_chars = 150, key = "reference")
     ###################
