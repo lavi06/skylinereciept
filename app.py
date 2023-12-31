@@ -461,10 +461,10 @@ if authentication_status:
 
         if flat_num % 100 <= 4:
             flat_config = "4 BHK - Tower A"
-            st.write("*4 BHK - Tower A*")
+            st.write("*4 BHK - Tower A - T2*")
         else:
             flat_config = "3 BHK - Tower B"
-            st.write("*3 BHK - Tower B*")
+            st.write("*3 BHK - Tower B - T1*")
     ###################
 
 
