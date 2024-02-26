@@ -24,7 +24,7 @@ passcode_key = {
 
 ################################################################################
 ## airtable.py
-token = "keyqc52n9cmBZNiAq"
+token = "pat3fppRKREzKvAC4.7b3e3e6d2d2477af4b334bf98eb9fb34930713b1f82ac86944b2d30d2041acc7"
 table_name = "tblCjsKzBgz7WexCL"
 
 
@@ -369,7 +369,7 @@ def show_db():
 
 if "db" not in st.session_state:
 
-    st.session_state.token = "keyqc52n9cmBZNiAq"
+    st.session_state.token = token
     st.session_state.columns = ["Flat","Reciept","Name","Date","Amount","Mode","Reference No", "created_by"]
 
     master_data = fetch_records(st.session_state.token, st.session_state.columns)
