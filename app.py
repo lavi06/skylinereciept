@@ -25,7 +25,8 @@ passcode_key = {
 ################################################################################
 ## airtable.py
 token = os.getenv("TOKEN")
-
+print(token)
+print("---")
 
 def fetch_records(token, fieldnames):
 
