@@ -24,9 +24,8 @@ passcode_key = {
 
 ################################################################################
 ## airtable.py
-token = "pat3fppRKREzKvAC4.7b3e3e6d2d2477af4b334bf98eb9fb34930713b1f82ac86944b2d30d2041acc7"
 table_name = "tblCjsKzBgz7WexCL"
-
+token = os.getenv("TOKEN")
 
 
 def fetch_records(token, fieldnames):
