@@ -24,7 +24,6 @@ passcode_key = {
 
 ################################################################################
 ## airtable.py
-table_name = "tblCjsKzBgz7WexCL"
 token = os.getenv("TOKEN")
 
 
