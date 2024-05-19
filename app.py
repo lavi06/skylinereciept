@@ -6,6 +6,8 @@ import requests, json
 import pandas as pd
 import time, os
 from fpdf import FPDF
+from dotenv import load_dotenv
+load_dotenv()
 
 #####################
 #### VERSION 2.0 ####
