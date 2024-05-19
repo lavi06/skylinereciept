@@ -4,7 +4,7 @@ from num2words import num2words
 import datetime
 import requests, json
 import pandas as pd
-import time
+import time, os
 from fpdf import FPDF
 
 #####################
