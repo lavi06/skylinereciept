@@ -7,6 +7,7 @@ import pandas as pd
 import time
 from fpdf import FPDF
 
+
 #####################
 #### VERSION 2.0 ####
 #####################
