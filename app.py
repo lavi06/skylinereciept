@@ -487,10 +487,10 @@ if authentication_status:
     with right:
         if flat_num % 100 <= 4:
             flat_config = "4 BHK - Tower A - T2"
-            st.text_input("Type", placeholder = "*4 BHK - Tower A - T2*", disabled = True, label_visibility="hidden")
+            st.text_input("", placeholder = "*4 BHK - Tower A - T2*", disabled = True)
         else:
             flat_config = "3 BHK - Tower B - T1"
-            st.text_input("Type", placeholder = "*3 BHK - Tower B - T1*", disabled = True, label_visibility="hidden")
+            st.text_input("", placeholder = "*3 BHK - Tower B - T1*", disabled = True)
     ###################
 
 
