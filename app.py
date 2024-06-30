@@ -3,10 +3,9 @@ from datetime import date
 from num2words import num2words
 import datetime
 import requests, json
-import pandas as pd
+# import pandas as pd
 import time
 from fpdf import FPDF
-
 
 #####################
 #### VERSION 2.0 ####
@@ -22,12 +21,11 @@ passcode_key = {
 
 ################################################################################
 
-
-################################################################################
 ## airtable.py
 token = "pat3fppRKREzKvAC4.7b3e3e6d2d2477af4b334bf98eb9fb34930713b1f82ac86944b2d30d2041acc7"
 table_name = "tblCjsKzBgz7WexCL"
 
+################################################################################
 
 
 def fetch_records(token, fieldnames):
@@ -40,7 +38,7 @@ def fetch_records(token, fieldnames):
         try:
             page = requests.get(f"https://api.airtable.com/v0/appwUzDMekCAdu0CI/Table%201",headers=headers, params = params)
             mdata = json.loads(page.content)
-
+            # print(mdata)
             data = mdata["records"]            
 
             for each in data:
@@ -67,9 +65,10 @@ def fetch_records(token, fieldnames):
             print(e)
             time.sleep(5)
 
-    db = pd.DataFrame(fields, columns = fieldnames)
+    return fields
 
-    return(db)
+    # db = pd.DataFrame(fields, columns = fieldnames)
+    # return(db)
 
 
 def create_record(token, json_data):
@@ -173,7 +172,6 @@ def section(pdf,_amount,gst,amount_in_words,name,flat_number,flat_config,mode,re
 
     return pdf
 
-
 def pdf_first_page(_amount,gst,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice):
 
     pdf = FPDF(orientation = 'P', unit = 'mm', format='A4')
@@ -269,14 +267,11 @@ def pdf_first_page(_amount,gst,amount_in_words,name,flat_number,flat_config,mode
     pdf.cell(75,  5, txt = "For Office Use", ln = 1, border = border, align="R")
 
     pdf.output('Receipt.pdf', 'F')
+
     with open("Receipt.pdf", "rb") as pdf_file:
         encoded_string = pdf_file.read()
     
     return encoded_string
-
-
-# pdf_first_page(amount,amount_in_words,name,flat_number,flat_config,mode,reference,invoice_num,date_invoice)
-# input("---")
 
 ################################################################################
 
@@ -294,38 +289,6 @@ except:
 
 
 ###################
-# config = {
-#    "credentials":{
-#       "usernames":{
-#          "Himanshu":{
-#             "email":"hggoyal06@gmail.com",
-#             "name":"Himanshu Goyal",
-#             "password":"$2b$12$3w6GciXe5az0TPE9DHjBkePY5nwLDaSFVwQyKTQCMPwENaZwQ.y8W"
-#          },
-#          "Demo":{
-#             "email":"hggoyal06@gmail.com",
-#             "name":"Himanshu Goyal",
-#             "password":"$2b$12$3w6GciXe5az0TPE9DHjBkePY5nwLDaSFVwQyKTQCMPwENaZwQ.y8W"
-#          }
-
-#       }
-#    },
-#    "cookie":{
-#       "expiry_days":30,
-#       "key":"elevate_cookie",
-#       "name":"elevate_cookie"
-#    }
-# }
-
-# authenticator = stauth.Authenticate(
-#     config['credentials'],
-#     config['cookie']['name'],
-#     config['cookie']['key'],
-#     config['cookie']['expiry_days'],
-#     # config['preauthorized']
-# )
-
-# auth_name, authentication_status, username = authenticator.login('Login', 'main')
 
 auth_name = "Admin"
 authentication_status = True
@@ -340,9 +303,6 @@ authentication_status = True
 #     st.warning('Please enter your username and password')
 ###################
 ###################
-###################
-###################
-
 
 
 
@@ -354,12 +314,18 @@ st.set_page_config(page_title="Skyline Elevate Reciepts", page_icon=":bar_chart:
 st.session_state.disabled = True
 st.session_state.pdf = ""
 
+
 ### Updates DataBase to be shown depending on Selected Flat
 def show_db():
 
-    database = st.session_state.master
+    master_database = st.session_state.master
 
-    database = database[(database.Flat == st.session_state["selected_flat"]) | (database.Flat == str(st.session_state["selected_flat"]))]
+    database = []
+    for x in master_database:
+        if (x[0] == st.session_state["selected_flat"]) or (x[0] == str(st.session_state["selected_flat"])):
+            database.append(x)
+
+    # database = master_database[(master_database.Flat == st.session_state["selected_flat"]) | (master_database.Flat == str(st.session_state["selected_flat"]))]
 
     st.session_state.db = database
 
@@ -371,15 +337,15 @@ def show_db():
 if "db" not in st.session_state:
 
     st.session_state.token = token
-    st.session_state.columns = ["Flat","Reciept","Name","Date","Amount","Mode","Reference No", "created_by"]
+    st.session_state.columns = ["Flat", "Reciept","Name","Date","Amount","Mode","Reference No", "created_by"]
 
     master_data = fetch_records(st.session_state.token, st.session_state.columns)
 
-    st.session_state.invoice = "Sky-" + f"{len(master_data.index)+1:03}"
-    st.session_state.invoice_num = len(master_data.index)
+    st.session_state.invoice = "Sky-" + f"{len(master_data)+1:03}"
+    st.session_state.invoice_num = len(master_data)
 
     st.session_state.master = master_data
-    st.session_state["selected_flat"] = 101
+    st.session_state["selected_flat"] = 702
 
     show_db()
 
@@ -397,7 +363,6 @@ def invoice_generated():
                 "Amount" : str(st.session_state.amount),
                 "Mode"   : st.session_state.mode,
                 "Reference No": st.session_state.reference,
-                # "created_by": auth_name
                 "created_by"  : passcode_key[st.session_state.passcode]
                 }
 
@@ -407,8 +372,8 @@ def invoice_generated():
             st.session_state.master = master_data
             show_db()
 
-            st.session_state.invoice = "Sky-" + f"{len(master_data.index)+1:03}"
-            st.session_state.invoice_num = st.session_state.invoice_num + 1
+            st.session_state.invoice = "Sky-" + f"{len(master_data)+1:03}"
+            st.session_state.invoice_num = len(master_data) + 1
 
             st.session_state.filename = f'Skyline-{st.session_state.selected_flat}-{st.session_state.invoice}.pdf'
 
@@ -418,39 +383,98 @@ def invoice_generated():
             st.session_state.success = "No"
 
 
+# def dup_invoice_generated():
+
+#     reciept_no = st.session_state.selected_reciept
+
+#     master_database = st.session_state.master
+#     db = master_database[(master_database.Reciept == reciept_no)].reset_index()
+
+#     json_data = {
+#         "Flat"   : str(db["Flat"]),
+#         "Reciept": str(db["Reciept"]),
+#         "Name"   : str(db["Name"]),
+#         "Date"   : str(date.today()),
+#         "Amount" : db["Amount"],
+#         "Mode"   : str(db["Mode"]),
+#         "Reference No": str(db["Reference No"]),
+#         "created_by"  : str(db["created_by"])
+#         }
+        
+#     _amount = round(json_data["Amount"]/1.05*1)
+#     gst     = (amount-_amount)
+
+#     amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
+
+#     if int(json_data["Flat"]) % 100 <= 4:
+#         flat_config = "4 BHK - Tower A - T2"
+#     else:
+#         flat_config = "3 BHK - Tower B - T1"
+
+
+#     pdf = pdf_first_page(_amount, gst, amount_in_words, json_data["Name"], json_data["Flat"], flat_config, json_data["Mode"], json_data["Reference No"], 
+#                         f"Sky-{reciept_no:03}", json_data["Date"])
+
+
+#     print(db['Amount'][0])
+#     st.write(f"Amount : {str(db['Amount'][0])}")
+
+    #         create_record(st.session_state.token, json_data)
+
+    #         master_data = fetch_records(st.session_state.token, st.session_state.columns)
+    #         st.session_state.master = master_data
+    #         show_db()
+
+    #         st.session_state.invoice = "Sky-" + f"{len(master_data.index)+1:03}"
+    #         st.session_state.invoice_num = st.session_state.invoice_num + 1
+
+    #         st.session_state.filename = f'Skyline-{st.session_state.selected_flat}-{st.session_state.invoice}.pdf'
+
+    #         st.session_state.success = "Yes"
+    #     except Exception as e:
+    #         print(e)
+    #         st.session_state.success = "No"
+
+
 def invoice_downloaded():
     if not st.session_state.disabled:
         st.success("Invoice Downloaded")    
 
 
+t1, t2 = st.tabs(["Generate", "Duplicate"])
+
 
 if authentication_status:
 
     ###################
-    first, second, third, fourth  = st.columns(4)
+    first, second, third, fourth  = t1.columns(4)
 
     first.write(f"Invoice No. : {st.session_state.invoice}")
     third.write(f"Date : {date.today()}")
     ###################
 
     ###################
-    left, right = st.columns(2)
+    left, right = t1.columns(2)
 
-    amount = left.number_input("Amount", value = 0 , key = "amount")
-    invoicename   = right.text_input("Name"   , value = "", key = "invoicename")
+    try:
+        nn = st.session_state.master[0][2]
+    except:
+        nn = ""
+
+    amount        = left.number_input("Amount", value = 0 , key = "amount")
+    invoicename   = right.text_input("Name"   , value = nn, key = "invoicename", placeholder = "Receipt Name")
 
 
     _amount = round(amount/1.05*1)
-    gst = (amount-_amount)
+    gst     = (amount-_amount)
 
 
     amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
-    st.write(f"*{amount_in_words}* Only")
+    t1.write(f"*{amount_in_words}* Only")
     ###################
 
-
     ###################
-    left, right = st.columns(2)
+    left, right = t1.columns(2)
 
     with left:
         flat_num = st.selectbox("Flat Number",
@@ -460,24 +484,26 @@ if authentication_status:
                 key="selected_flat",
     			)
 
+    with right:
         if flat_num % 100 <= 4:
             flat_config = "4 BHK - Tower A - T2"
-            st.write("*4 BHK - Tower A - T2*")
+            st.text_input("Type", placeholder = "*4 BHK - Tower A - T2*", disabled = True, label_visibility="hidden")
         else:
             flat_config = "3 BHK - Tower B - T1"
-            st.write("*3 BHK - Tower B - T1*")
+            st.text_input("Type", placeholder = "*3 BHK - Tower B - T1*", disabled = True, label_visibility="hidden")
     ###################
 
 
     ###################
-    left, right = st.columns(2)
+    left, right = t1.columns(2)
     with left:
-        mode = st.selectbox("Mode of Payment", ["RTGS","DD","Cheque","NEFT","IMPS","UPI"], key = "mode")
+        mode = st.selectbox("Mode of Payment", ["RTGS","DD","Cheque","NEFT","IMPS"], key = "mode")
     with right: 
         reference = st.text_input("Transaction Reference No.", max_chars = 150, key = "reference")
     ###################
 
-    left, right = st.columns(2)
+
+    left, right = t1.columns(2)
     with left:
         passcode = st.text_input("Passcode - For Verification", max_chars = 20, key = "passcode", type="password")
 
@@ -490,23 +516,24 @@ if authentication_status:
     ###################
 
     ###################
-    left, right,r,t= st.columns(4)
+    left, right,r,t = t1.columns(4)
 
     generate = left.button("Generate Invoice", key='but_generate', on_click = invoice_generated)
 
     if generate:
 
         if passcode not in passcode_key.keys():
-            st.error("Incorrect Passcode")
+            t1.error("Incorrect Passcode")
 
         elif invoicename == "":
-            st.error("Please Enter the Name Field")
+            t1.error("Please Enter the Name Field")
         elif amount == 0:
-            st.error("Please Enter an Amount")
+            t1.error("Please Enter an Amount")
 
         elif st.session_state.success == "Yes":
-            st.success("Invoice Generated")
+            t1.success("Invoice Generated")
             date_invoice = str(date.today())
+
             pdf = pdf_first_page(_amount, gst, amount_in_words, invoicename, flat_num, flat_config, mode, reference, f"Sky-{st.session_state.invoice_num:03}", date_invoice)
 
             st.session_state.filename = f'Skyline-{flat_num}-Sky-{st.session_state.invoice_num:03}.pdf'
@@ -514,12 +541,149 @@ if authentication_status:
             st.session_state.pdf = pdf
 
         elif st.session_state.success == "No":
-            st.error("Could Not Generate Invoice")
+            t1.error("Could Not Generate Invoice")
 
 
     download_Invoice = right.download_button(label="Download Invoice", data = st.session_state.pdf, file_name= st.session_state.filename, mime='application/octet-stream', disabled = st.session_state.disabled, on_click = invoice_downloaded)
 
     # email = r.button("Email", disabled = st.session_state.disabled)
 
-    st.write(f"Total Reciepts for Flat-{flat_num}")
-    st.write(st.session_state.db)
+    t1.write(f"Total Reciepts for Flat-{flat_num}")
+
+    _sum = 0
+    for e in st.session_state.db:
+        _sum += float(e[4])
+
+
+    amount_in_words = num2words(_sum, lang='en_IN').replace(",","").title()
+    t1.write(f"Sum : {_sum} | *{amount_in_words}* Only")
+
+    # st.session_state.columns = ["Flat", "Reciept","Name","Date","Amount","Mode","Reference No", "created_by"]
+    A, a, b, c, d, e, f = t1.columns(7)
+    A.write("")
+    a.write(st.session_state.columns[0])
+    b.write(st.session_state.columns[1])
+    c.write(st.session_state.columns[2])
+    d.write(st.session_state.columns[3])
+    e.write(st.session_state.columns[4])
+    f.write(st.session_state.columns[6])
+
+    for i,each in enumerate(st.session_state.db,1):
+        A, a, b, c, d, e, f = t1.columns(7)
+        A.write(i)
+        a.write(each[0])
+        b.write(each[1])
+        c.write(each[2])
+        d.write(each[3])
+        e.write(each[4])
+        f.write(each[6])
+        t1.write("---------------------------------------------")
+
+
+    # st.write
+
+    # t1.table(st.session_state.db)
+
+
+# with t2:
+#     left, right = st.columns(2)
+
+#     print(st.session_state.master)
+    
+#     with left:
+#         flat_num = st.selectbox("Reciept No.", list(st.session_state.master["Reciept"]),
+#                 key="selected_reciept",
+#                 )
+
+#     reciept_no = st.session_state.selected_reciept
+
+#     master_database = st.session_state.master
+#     db = master_database[(master_database.Reciept == reciept_no)].reset_index()
+
+#     # st.session_state.columns = ["Flat", "Reciept","Name","Date","Amount","Mode","Reference No", "created_by"]
+
+#     l,r = st.columns(2)
+#     amount        = l.text_input("Amount", value = str(db['Amount'][0]), disabled = True)
+#     invoicename   = r.text_input("Name"  , value = str(db['Name'][0]), disabled = True)
+
+
+#     amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
+#     st.write(f"*{amount_in_words}* Only")
+#     ###################
+
+#     ###################
+#     left, right = st.columns(2)
+
+#     with left:
+#         flat_num = st.text_input("Flat Number", value = str(db['Flat'][0]), disabled = True)
+
+#     with right:
+#         if int(flat_num) % 100 <= 4:
+#             flat_config = "4 BHK - Tower A - T2"
+#             st.text_input("Flat Type", placeholder = "*4 BHK - Tower A - T2*", disabled = True, label_visibility="hidden")
+#         else:
+#             flat_config = "3 BHK - Tower B - T1"
+#             st.text_input("Flat Type", placeholder = "*3 BHK - Tower B - T1*", disabled = True, label_visibility="hidden")
+#     ###################
+
+
+#     ###################
+#     left, right = st.columns(2)
+#     with left:
+#         st.text_input("Mode of Payment", value = str(db['Mode'][0]), disabled = True)
+#     with right: 
+#         st.text_input("Transaction Reference No.", value = str(db['Reference No'][0]), disabled = True)
+#     ###################
+
+#     left, right,a,b = st.columns(4)
+
+#     # generate = st.button("Generate Invoice", key='dup_generate', on_click = dup_invoice_generated)
+#     generate = left.button("Generate Invoice", key='dup_generate')
+
+
+#     if generate:
+
+#         reciept_no = st.session_state.selected_reciept
+
+#         master_database = st.session_state.master
+#         db = master_database[(master_database.Reciept == reciept_no)].reset_index()
+
+#         json_data = {
+#             "Flat"   : db["Flat"][0],
+#             "Reciept": str(db["Reciept"][0]),
+#             "Name"   : str(db["Name"][0]),
+#             "Date"   : str(db["Date"][0]),
+#             "Amount" : float(db["Amount"][0]),
+#             "Mode"   : str(db["Mode"][0]),
+#             "Reference No": str(db["Reference No"][0]),
+#             "created_by"  : str(db["created_by"][0])
+#             }
+
+#         amount  = json_data["Amount"]
+#         _amount = round(amount/1.05*1)
+#         gst     = (amount-_amount)
+
+#         amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
+
+#         if int(json_data["Flat"]) % 100 <= 4:
+#             flat_config = "4 BHK - Tower A - T2"
+#         else:
+#             flat_config = "3 BHK - Tower B - T1"
+
+#         print(reciept_no)
+#         print(_amount, gst, amount_in_words, json_data["Name"], json_data["Flat"], flat_config, json_data["Mode"], json_data["Reference No"], 
+#                             reciept_no, json_data["Date"])
+
+#         pdf = pdf_first_page(_amount, gst, amount_in_words, json_data["Name"], json_data["Flat"], flat_config, json_data["Mode"], json_data["Reference No"], 
+#                             reciept_no, json_data["Date"])
+
+#         st.session_state.filename = f'Skyline-{flat_num}-Sky-{st.session_state.invoice_num:03}.pdf'
+
+#         right.download_button(label="Download Invoice", data = pdf, file_name= f'Skyline-{json_data["Flat"]}-{reciept_no}.pdf', mime='application/octet-stream', disabled = False)
+
+
+
+
+
+
+    
