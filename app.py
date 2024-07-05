@@ -345,7 +345,7 @@ if "db" not in st.session_state:
     st.session_state.invoice_num = len(master_data)
 
     st.session_state.master = master_data
-    st.session_state["selected_flat"] = 702
+    st.session_state["selected_flat"] = 101
 
     show_db()
 
@@ -373,7 +373,7 @@ def invoice_generated():
             show_db()
 
             st.session_state.invoice = "Sky-" + f"{len(master_data)+1:03}"
-            st.session_state.invoice_num = len(master_data) + 1
+            st.session_state.invoice_num = len(master_data)
 
             st.session_state.filename = f'Skyline-{st.session_state.selected_flat}-{st.session_state.invoice}.pdf'
 
