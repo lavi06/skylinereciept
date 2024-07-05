@@ -456,8 +456,12 @@ if authentication_status:
     ###################
     left, right = t1.columns(2)
 
+    nn = ""
     try:
-        nn = st.session_state.master[0][2]
+        for each in st.session_state.master:
+            if each[0] == str(st.session_state["selected_flat"]):
+                nn = each[2]
+                break
     except:
         nn = ""
 
@@ -487,10 +491,10 @@ if authentication_status:
     with right:
         if flat_num % 100 <= 4:
             flat_config = "4 BHK - Tower A - T2"
-            st.text_input("", placeholder = "*4 BHK - Tower A - T2*", disabled = True)
+            st.text_input("-", placeholder = "*4 BHK - Tower A - T2*", disabled = True)
         else:
             flat_config = "3 BHK - Tower B - T1"
-            st.text_input("", placeholder = "*3 BHK - Tower B - T1*", disabled = True)
+            st.text_input("-", placeholder = "*3 BHK - Tower B - T1*", disabled = True)
     ###################
 
 
@@ -585,17 +589,20 @@ if authentication_status:
     # t1.table(st.session_state.db)
 
 
-# with t2:
-#     left, right = st.columns(2)
+with t2:
+    left, right = st.columns(2)
 
-#     print(st.session_state.master)
     
-#     with left:
-#         flat_num = st.selectbox("Reciept No.", list(st.session_state.master["Reciept"]),
-#                 key="selected_reciept",
-#                 )
+    all_receipts = []
+    for each in st.session_state.master:
+        all_receipts.append(each[1])
 
-#     reciept_no = st.session_state.selected_reciept
+    with left:
+        flat_num = st.selectbox("Reciept No.", all_receipts,
+                key="selected_reciept",
+                )
+
+    reciept_no = st.session_state.selected_reciept
 
 #     master_database = st.session_state.master
 #     db = master_database[(master_database.Reciept == reciept_no)].reset_index()
