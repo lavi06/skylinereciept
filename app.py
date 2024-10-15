@@ -7,6 +7,7 @@ import requests, json
 import time
 from fpdf import FPDF
 
+
 #####################
 #### VERSION 2.0 ####
 #####################
@@ -591,102 +592,70 @@ if authentication_status:
 
 with t2:
     left, right = st.columns(2)
-
-    
+   
     all_receipts = []
     for each in st.session_state.master:
         all_receipts.append(each[1])
 
+    sorted_all_receipts = sorted(all_receipts, key=lambda x: int(x.split('-')[1]))
+
     with left:
-        flat_num = st.selectbox("Reciept No.", all_receipts,
+        flat_num = st.selectbox("Reciept No.", sorted_all_receipts,
                 key="selected_reciept",
                 )
 
     reciept_no = st.session_state.selected_reciept
 
-#     master_database = st.session_state.master
-#     db = master_database[(master_database.Reciept == reciept_no)].reset_index()
+    master_database = st.session_state.master
 
-#     # st.session_state.columns = ["Flat", "Reciept","Name","Date","Amount","Mode","Reference No", "created_by"]
+    for each in master_database:
+        if each[1] == reciept_no:
+            amount         = float(each[4])
 
-#     l,r = st.columns(2)
-#     amount        = l.text_input("Amount", value = str(db['Amount'][0]), disabled = True)
-#     invoicename   = r.text_input("Name"  , value = str(db['Name'][0]), disabled = True)
+            _amount = round(amount/1.05*1)
+            gst     = (amount-_amount)
 
+            amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
 
-#     amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
-#     st.write(f"*{amount_in_words}* Only")
-#     ###################
-
-#     ###################
-#     left, right = st.columns(2)
-
-#     with left:
-#         flat_num = st.text_input("Flat Number", value = str(db['Flat'][0]), disabled = True)
-
-#     with right:
-#         if int(flat_num) % 100 <= 4:
-#             flat_config = "4 BHK - Tower A - T2"
-#             st.text_input("Flat Type", placeholder = "*4 BHK - Tower A - T2*", disabled = True, label_visibility="hidden")
-#         else:
-#             flat_config = "3 BHK - Tower B - T1"
-#             st.text_input("Flat Type", placeholder = "*3 BHK - Tower B - T1*", disabled = True, label_visibility="hidden")
-#     ###################
+            invoicename     = each[2]
+            flat_num        = each[0]
+            if int(flat_num) % 100 <= 4:
+                flat_config = "4 BHK - Tower A - T2"
+            else:
+                flat_config = "3 BHK - Tower B - T1"
+            mode            = each[5]
+            reference       = each[6]
+            invoice_num     = each[1]
+            date_invoice    = each[3]
 
 
-#     ###################
-#     left, right = st.columns(2)
-#     with left:
-#         st.text_input("Mode of Payment", value = str(db['Mode'][0]), disabled = True)
-#     with right: 
-#         st.text_input("Transaction Reference No.", value = str(db['Reference No'][0]), disabled = True)
-#     ###################
+            left, right = t2.columns(2)
+            with left:
+                passcode = st.text_input("Passcode - For Verification", max_chars = 20, key = "passcode_dup", type="password")
 
-#     left, right,a,b = st.columns(4)
+            ###################
+            left, right,r = t2.columns(3)
 
-#     # generate = st.button("Generate Invoice", key='dup_generate', on_click = dup_invoice_generated)
-#     generate = left.button("Generate Invoice", key='dup_generate')
+            # generate = left.button("Generate Dup. Invoice", key='but_generate_dup', on_click = invoice_generated)
+            generate = left.button("Generate Dup. Invoice", key='but_generate_dup')
 
+            if generate:
+                if passcode not in passcode_key.keys():
+                    t2.error("Incorrect Passcode")
 
-#     if generate:
+                elif invoicename == "":
+                    t2.error("Please Enter the Name Field")
+                elif amount == 0:
+                    t2.error("Please Enter an Amount")
 
-#         reciept_no = st.session_state.selected_reciept
+                else:
+                    t2.success("Invoice Generated")
 
-#         master_database = st.session_state.master
-#         db = master_database[(master_database.Reciept == reciept_no)].reset_index()
+                    pdf = pdf_first_page(_amount, gst, amount_in_words, invoicename, flat_num, flat_config, mode, reference, invoice_num, date_invoice)
 
-#         json_data = {
-#             "Flat"   : db["Flat"][0],
-#             "Reciept": str(db["Reciept"][0]),
-#             "Name"   : str(db["Name"][0]),
-#             "Date"   : str(db["Date"][0]),
-#             "Amount" : float(db["Amount"][0]),
-#             "Mode"   : str(db["Mode"][0]),
-#             "Reference No": str(db["Reference No"][0]),
-#             "created_by"  : str(db["created_by"][0])
-#             }
+                    filename = f'Skyline-{flat_num}-{invoice_num}.pdf'
 
-#         amount  = json_data["Amount"]
-#         _amount = round(amount/1.05*1)
-#         gst     = (amount-_amount)
-
-#         amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
-
-#         if int(json_data["Flat"]) % 100 <= 4:
-#             flat_config = "4 BHK - Tower A - T2"
-#         else:
-#             flat_config = "3 BHK - Tower B - T1"
-
-#         print(reciept_no)
-#         print(_amount, gst, amount_in_words, json_data["Name"], json_data["Flat"], flat_config, json_data["Mode"], json_data["Reference No"], 
-#                             reciept_no, json_data["Date"])
-
-#         pdf = pdf_first_page(_amount, gst, amount_in_words, json_data["Name"], json_data["Flat"], flat_config, json_data["Mode"], json_data["Reference No"], 
-#                             reciept_no, json_data["Date"])
-
-#         st.session_state.filename = f'Skyline-{flat_num}-Sky-{st.session_state.invoice_num:03}.pdf'
-
-#         right.download_button(label="Download Invoice", data = pdf, file_name= f'Skyline-{json_data["Flat"]}-{reciept_no}.pdf', mime='application/octet-stream', disabled = False)
+                    download_Invoice = right.download_button(label="Download Dup. Invoice", data = pdf, file_name= filename, mime='application/octet-stream', disabled = False, on_click = invoice_downloaded)
 
 
 
