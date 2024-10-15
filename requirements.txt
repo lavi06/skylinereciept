@@ -4,3 +4,4 @@ num2words
 requests==2.24.0
 fpdf
 python-dotenv
+altair<5
