@@ -324,7 +324,8 @@ def show_db():
     database = []
     for x in master_database:
         if (x[0] == st.session_state["selected_flat"]) or (x[0] == str(st.session_state["selected_flat"])):
-            database.append(x)
+            if x[-1] is None:
+                database.append(x)
 
     # database = master_database[(master_database.Flat == st.session_state["selected_flat"]) | (master_database.Flat == str(st.session_state["selected_flat"]))]
 
@@ -338,7 +339,7 @@ def show_db():
 if "db" not in st.session_state:
 
     st.session_state.token = token
-    st.session_state.columns = ["Flat", "Reciept","Name","Date","Amount","Mode","Reference No", "created_by"]
+    st.session_state.columns = ["Flat", "Reciept","Name","Date","Amount","Mode","Reference No", "created_by", "Cancel"]
 
     master_data = fetch_records(st.session_state.token, st.session_state.columns)
 
