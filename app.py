@@ -26,6 +26,11 @@ passcode_key = {
 token = "pat3fppRKREzKvAC4.7b3e3e6d2d2477af4b334bf98eb9fb34930713b1f82ac86944b2d30d2041acc7"
 table_name = "tblCjsKzBgz7WexCL"
 
+airtable_url = "https://api.airtable.com/v0/appwUzDMekCAdu0CI/Table%201"
+### Grabintel2
+token = "paty3aZlpH8vhTPXX.0ed9ca67273354044cda3b57a19587df47673a3b16632665de401881b81d4b16"
+airtable_url = "https://api.airtable.com/v0/appzUuXVK7BZLDw3Y/tbl2o9Ktflclik554"
+
 ################################################################################
 
 
@@ -37,7 +42,7 @@ def fetch_records(token, fieldnames):
 
     while 1:
         try:
-            page = requests.get(f"https://api.airtable.com/v0/appwUzDMekCAdu0CI/Table%201",headers=headers, params = params)
+            page = requests.get(airtable_url,headers=headers, params = params)
             mdata = json.loads(page.content)
             # print(mdata)
             data = mdata["records"]            
@@ -86,7 +91,7 @@ def create_record(token, json_data):
             },
         ],
     }
-    page = requests.post(f"https://api.airtable.com/v0/appwUzDMekCAdu0CI/Table%201",headers=headers, json = json_data)
+    page = requests.post(airtable_url,headers=headers, json = json_data)
     mdata = json.loads(page.content)
 
     print(mdata)
