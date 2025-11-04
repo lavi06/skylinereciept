@@ -26,10 +26,11 @@ passcode_key = {
 token = "pat3fppRKREzKvAC4.7b3e3e6d2d2477af4b334bf98eb9fb34930713b1f82ac86944b2d30d2041acc7"
 table_name = "tblCjsKzBgz7WexCL"
 
+
 airtable_url = "https://api.airtable.com/v0/appwUzDMekCAdu0CI/Table%201"
 ### Grabintel2
-token = "paty3aZlpH8vhTPXX.0ed9ca67273354044cda3b57a19587df47673a3b16632665de401881b81d4b16"
-airtable_url = "https://api.airtable.com/v0/appzUuXVK7BZLDw3Y/tbl2o9Ktflclik554"
+# token = "paty3aZlpH8vhTPXX.0ed9ca67273354044cda3b57a19587df47673a3b16632665de401881b81d4b16"
+# airtable_url = "https://api.airtable.com/v0/appzUuXVK7BZLDw3Y/tbl2o9Ktflclik554"
 
 ################################################################################
 
@@ -329,7 +330,7 @@ def show_db():
     database = []
     for x in master_database:
         if (x[0] == st.session_state["selected_flat"]) or (x[0] == str(st.session_state["selected_flat"])):
-            if x[-1] is None:
+            if x[-2] is None:
                 database.append(x)
 
     # database = master_database[(master_database.Flat == st.session_state["selected_flat"]) | (master_database.Flat == str(st.session_state["selected_flat"]))]
@@ -344,7 +345,7 @@ def show_db():
 if "db" not in st.session_state:
 
     st.session_state.token = token
-    st.session_state.columns = ["Flat", "Reciept","Name","Date","Amount","Mode","Reference No", "created_by", "Cancel"]
+    st.session_state.columns = ["Flat", "Reciept","Name","Date","Amount","Mode","Reference No", "created_by", "Cancel", "IFMS"]
 
     master_data = fetch_records(st.session_state.token, st.session_state.columns)
 
@@ -370,7 +371,8 @@ def invoice_generated():
                 "Amount" : str(st.session_state.amount),
                 "Mode"   : st.session_state.mode,
                 "Reference No": st.session_state.reference,
-                "created_by"  : passcode_key[st.session_state.passcode]
+                "created_by"  : passcode_key[st.session_state.passcode],
+                "IFMS" : st.session_state.IFMS_MARKER
                 }
 
             create_record(st.session_state.token, json_data)
@@ -390,58 +392,6 @@ def invoice_generated():
             st.session_state.success = "No"
 
 
-# def dup_invoice_generated():
-
-#     reciept_no = st.session_state.selected_reciept
-
-#     master_database = st.session_state.master
-#     db = master_database[(master_database.Reciept == reciept_no)].reset_index()
-
-#     json_data = {
-#         "Flat"   : str(db["Flat"]),
-#         "Reciept": str(db["Reciept"]),
-#         "Name"   : str(db["Name"]),
-#         "Date"   : str(date.today()),
-#         "Amount" : db["Amount"],
-#         "Mode"   : str(db["Mode"]),
-#         "Reference No": str(db["Reference No"]),
-#         "created_by"  : str(db["created_by"])
-#         }
-        
-#     _amount = round(json_data["Amount"]/1.05*1)
-#     gst     = (amount-_amount)
-
-#     amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
-
-#     if int(json_data["Flat"]) % 100 <= 4:
-#         flat_config = "4 BHK - Tower A - T2"
-#     else:
-#         flat_config = "3 BHK - Tower B - T1"
-
-
-#     pdf = pdf_first_page(_amount, gst, amount_in_words, json_data["Name"], json_data["Flat"], flat_config, json_data["Mode"], json_data["Reference No"], 
-#                         f"Sky-{reciept_no:03}", json_data["Date"])
-
-
-#     print(db['Amount'][0])
-#     st.write(f"Amount : {str(db['Amount'][0])}")
-
-    #         create_record(st.session_state.token, json_data)
-
-    #         master_data = fetch_records(st.session_state.token, st.session_state.columns)
-    #         st.session_state.master = master_data
-    #         show_db()
-
-    #         st.session_state.invoice = "Sky-" + f"{len(master_data.index)+1:03}"
-    #         st.session_state.invoice_num = st.session_state.invoice_num + 1
-
-    #         st.session_state.filename = f'Skyline-{st.session_state.selected_flat}-{st.session_state.invoice}.pdf'
-
-    #         st.session_state.success = "Yes"
-    #     except Exception as e:
-    #         print(e)
-    #         st.session_state.success = "No"
-
 
 def invoice_downloaded():
     if not st.session_state.disabled:
@@ -459,6 +409,9 @@ if authentication_status:
     first.write(f"Invoice No. : {st.session_state.invoice}")
     third.write(f"Date : {date.today()}")
     ###################
+
+    left, right = t1.columns(2)
+    left.checkbox("IFMS_Marker", value = False, key="IFMS_MARKER", help="Check the box if IFMS", on_change = None, args=None, disabled=False, label_visibility="visible", width="content")
 
     ###################
     left, right = t1.columns(2)
@@ -482,6 +435,16 @@ if authentication_status:
 
     amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
     t1.write(f"*{amount_in_words}* Only")
+
+    if st.session_state.IFMS_MARKER:
+        _amount = amount
+        gst = 0
+    else:
+        _amount = round(amount/1.05*1)
+        gst     = (amount-_amount)
+
+    t1.write(f"Amount : *{_amount}* | GST : {gst}")
+
     ###################
 
     ###################
@@ -513,6 +476,11 @@ if authentication_status:
         reference = st.text_input("Transaction Reference No.", max_chars = 150, key = "reference")
     ###################
 
+    if st.session_state.IFMS_MARKER:
+        try:
+            reference = "IFMS : " + reference
+        except:
+            pass
 
     left, right = t1.columns(2)
     with left:
@@ -616,10 +584,19 @@ with t2:
 
     for each in master_database:
         if each[1] == reciept_no:
-            amount         = float(each[4])
 
-            _amount = round(amount/1.05*1)
-            gst     = (amount-_amount)
+            IFMS_MARKER = each[-1]
+            if IFMS_MARKER:
+                amount         = float(each[4])
+
+                _amount = amount
+                gst     = (amount-_amount)
+
+            else:
+                amount         = float(each[4])
+
+                _amount = round(amount/1.05*1)
+                gst     = (amount-_amount)
 
             amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
 
@@ -633,7 +610,6 @@ with t2:
             reference       = each[6]
             invoice_num     = each[1]
             date_invoice    = each[3]
-
 
             left, right = t2.columns(2)
             with left:
