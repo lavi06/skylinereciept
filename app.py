@@ -411,7 +411,7 @@ if authentication_status:
     ###################
 
     left, right = t1.columns(2)
-    left.checkbox("IFMS_Marker", value = False, key="IFMS_MARKER", help="Check the box if IFMS", on_change = None, args=None, disabled=False, label_visibility="visible", width="content")
+    left.checkbox("IFMS_Marker", value = False, key="IFMS_MARKER", help="Check the box if IFMS", on_change = None, args=None, disabled=False)
 
     ###################
     left, right = t1.columns(2)
