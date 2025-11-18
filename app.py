@@ -29,8 +29,8 @@ table_name = "tblCjsKzBgz7WexCL"
 
 airtable_url = "https://api.airtable.com/v0/appwUzDMekCAdu0CI/Table%201"
 ### Grabintel2
-token = "paty3aZlpH8vhTPXX.0ed9ca67273354044cda3b57a19587df47673a3b16632665de401881b81d4b16"
-airtable_url = "https://api.airtable.com/v0/appzUuXVK7BZLDw3Y/tbl2o9Ktflclik554"
+# token = "paty3aZlpH8vhTPXX.0ed9ca67273354044cda3b57a19587df47673a3b16632665de401881b81d4b16"
+# airtable_url = "https://api.airtable.com/v0/appzUuXVK7BZLDw3Y/tbl2o9Ktflclik554"
 
 ################################################################################
 
