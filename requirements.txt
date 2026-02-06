@@ -3,3 +3,4 @@ DateTime==4.4
 num2words
 requests==2.24.0
 fpdf
+altair<5
