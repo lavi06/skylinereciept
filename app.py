@@ -22,14 +22,14 @@ passcode_key = {
 
 ################################################################################
 
-## airtable.py
-token = "pat3fppRKREzKvAC4.7b3e3e6d2d2477af4b334bf98eb9fb34930713b1f82ac86944b2d30d2041acc7"
-table_name = "tblCjsKzBgz7WexCL"
-airtable_url = "https://api.airtable.com/v0/appwUzDMekCAdu0CI/Table%201"
+# ## airtable.py
+# token = "pat3fppRKREzKvAC4.7b3e3e6d2d2477af4b334bf98eb9fb34930713b1f82ac86944b2d30d2041acc7"
+# table_name = "tblCjsKzBgz7WexCL"
+# airtable_url = "https://api.airtable.com/v0/appwUzDMekCAdu0CI/Table%201"
 
-# ### Grabintel2
-# token = "paty3aZlpH8vhTPXX.0ed9ca67273354044cda3b57a19587df47673a3b16632665de401881b81d4b16"
-# airtable_url = "https://api.airtable.com/v0/appzUuXVK7BZLDw3Y/tbl2o9Ktflclik554"
+### Grabintel2
+token = "paty3aZlpH8vhTPXX.0ed9ca67273354044cda3b57a19587df47673a3b16632665de401881b81d4b16"
+airtable_url = "https://api.airtable.com/v0/appzUuXVK7BZLDw3Y/tbl2o9Ktflclik554"
 
 # ### Grabintel17 - tab grab1
 # token = "patLTGpATLKnvKcx2.5aaa4259982cc7e2d5a1beef122388760f90fc61fa095427340456b0291d4216"
