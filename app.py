@@ -31,9 +31,9 @@ passcode_key = {
 token = "paty3aZlpH8vhTPXX.0ed9ca67273354044cda3b57a19587df47673a3b16632665de401881b81d4b16"
 airtable_url = "https://api.airtable.com/v0/appzUuXVK7BZLDw3Y/tbl2o9Ktflclik554"
 
-# ### Grabintel17 - tab grab1
-# token = "patLTGpATLKnvKcx2.5aaa4259982cc7e2d5a1beef122388760f90fc61fa095427340456b0291d4216"
-# airtable_url = "https://api.airtable.com/v0/appLYbLlMddk5i6ct/tbl0Z5xv9g8yVv7dM"
+### Grabintel17 - tab grab1
+token = "patLTGpATLKnvKcx2.5aaa4259982cc7e2d5a1beef122388760f90fc61fa095427340456b0291d4216"
+airtable_url = "https://api.airtable.com/v0/appLYbLlMddk5i6ct/tbl0Z5xv9g8yVv7dM"
 
 ################################################################################
 
