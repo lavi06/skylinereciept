@@ -1,3 +1,5 @@
+
+################################################################################
 import streamlit as st
 from datetime import date
 from num2words import num2words
@@ -6,6 +8,7 @@ import requests, json
 # import pandas as pd
 import time
 from fpdf import FPDF
+import psycopg2
 
 
 #####################
@@ -22,83 +25,76 @@ passcode_key = {
 
 ################################################################################
 
+DATABASE_URL = "postgresql://neondb_owner:npg_KHlwjGW59qmh@ep-patient-bush-ahz51343-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+
 # ## airtable.py
 # token = "pat3fppRKREzKvAC4.7b3e3e6d2d2477af4b334bf98eb9fb34930713b1f82ac86944b2d30d2041acc7"
 # table_name = "tblCjsKzBgz7WexCL"
 # airtable_url = "https://api.airtable.com/v0/appwUzDMekCAdu0CI/Table%201"
 
-### Grabintel2
-token = "paty3aZlpH8vhTPXX.0ed9ca67273354044cda3b57a19587df47673a3b16632665de401881b81d4b16"
-airtable_url = "https://api.airtable.com/v0/appzUuXVK7BZLDw3Y/tbl2o9Ktflclik554"
+# ### Grabintel2
+# token = "paty3aZlpH8vhTPXX.0ed9ca67273354044cda3b57a19587df47673a3b16632665de401881b81d4b16"
+# airtable_url = "https://api.airtable.com/v0/appzUuXVK7BZLDw3Y/tbl2o9Ktflclik554"
 
-### Grabintel17 - tab grab1
-token = "patLTGpATLKnvKcx2.5aaa4259982cc7e2d5a1beef122388760f90fc61fa095427340456b0291d4216"
-airtable_url = "https://api.airtable.com/v0/appLYbLlMddk5i6ct/tbl0Z5xv9g8yVv7dM"
+# ### Grabintel17 - tab grab1
+# token = "patLTGpATLKnvKcx2.5aaa4259982cc7e2d5a1beef122388760f90fc61fa095427340456b0291d4216"
+# airtable_url = "https://api.airtable.com/v0/appLYbLlMddk5i6ct/tbl0Z5xv9g8yVv7dM"
 
 ################################################################################
 
 
 def fetch_records(token, fieldnames):
 
-    headers = {'Authorization': 'Bearer %s' % token}
 
-    fields = []; params = []; pp = 1
-
-    while 1:
-        try:
-            page = requests.get(airtable_url,headers=headers, params = params)
-            mdata = json.loads(page.content)
-            # print(mdata)
-            data = mdata["records"]            
-
-            for each in data:
-                if len(each["fields"]) > 0:
-
-                    temp = []
-                    for ff in fieldnames:
-                        try:
-                            temp.append(each["fields"][ff])
-                        except:
-                            temp.append(None)
-                    fields.append(temp)
-
-            try:            
-                check = mdata["offset"]
-                if len(check)>5:
-                    params = [("offset",check)]
-                else:
-                    break           
-            except:
-                break
-            pp = pp + 1
-        except Exception as e:
-            print(e)
-            time.sleep(5)
-
-    return fields
-
-    # db = pd.DataFrame(fields, columns = fieldnames)
-    # return(db)
+    conn = psycopg2.connect(DATABASE_URL)
+    cur = conn.cursor()
 
 
-def create_record(token, json_data):
+    cur.execute("SELECT * FROM Reciepts;")
 
-    headers = {'Authorization': 'Bearer %s' % token}
+    rows = cur.fetchall()
 
-    fields = []; params = []; pp = 1
+    records = []
+
+    for row in rows:
+        records.append(list(row)[1:])
+
+    cur.close()
+    conn.close()
+
+    return records
 
 
-    json_data = {
-        'records': [
-            {
-                'fields': json_data
-            },
-        ],
-    }
-    page = requests.post(airtable_url,headers=headers, json = json_data)
-    mdata = json.loads(page.content)
 
-    print(mdata)
+
+
+
+def create_record(record):
+
+
+    # print(record)
+    record = tuple(record)
+    # print(record)
+
+    insert_query = """
+    INSERT INTO Reciepts
+    (Flat, Reciept, Name, Date, Amount, Mode, Reference_No, created_by, Cancel, IFMS)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+
+    conn = psycopg2.connect(DATABASE_URL)
+    cur = conn.cursor()
+
+
+    cur.execute(insert_query, record)
+    conn.commit()
+
+
+    return
+
+
+
 
 
 ################################################################################
@@ -330,12 +326,16 @@ def show_db():
 
     master_database = st.session_state.master
 
+
     database = []
     for x in master_database:
         if (x[0] == st.session_state["selected_flat"]) or (x[0] == str(st.session_state["selected_flat"])):
-            if x[-2] is None:
+            # if x[-2] is None or x[-2] == "NaN" or x[-2] is "NaN": 
+            if "Can" not in x[-2]:
                 database.append(x)
+                print(x)
 
+    print("---------")
     # database = master_database[(master_database.Flat == st.session_state["selected_flat"]) | (master_database.Flat == str(st.session_state["selected_flat"]))]
 
     st.session_state.db = database
@@ -375,13 +375,19 @@ def invoice_generated():
                 "Mode"   : st.session_state.mode,
                 "Reference No": st.session_state.reference,
                 "created_by"  : passcode_key[st.session_state.passcode],
+                "Cancel": "",
                 "IFMS" : st.session_state.IFMS_MARKER
                 }
 
-            create_record(st.session_state.token, json_data)
+            # create_record(st.session_state.token, json_data)
+
+            create_record((str(st.session_state.selected_flat), st.session_state.invoice, st.session_state.invoicename, str(date.today()),
+                           str(st.session_state.amount), st.session_state.mode, st.session_state.reference, passcode_key[st.session_state.passcode],
+                           "", st.session_state.IFMS_MARKER))
 
             master_data = fetch_records(st.session_state.token, st.session_state.columns)
             st.session_state.master = master_data
+
             show_db()
 
             st.session_state.invoice = "Sky-" + f"{len(master_data)+1:03}"
@@ -455,11 +461,11 @@ if authentication_status:
 
     with left:
         flat_num = st.selectbox("Flat Number",
-    			[101, 102, 103, 104, 201, 202, 203, 204, 301, 302, 303, 304, 401, 402, 403, 404, 501, 502, 503, 504, 601, 602, 603, 604, 701, 702, 703, 704, 801, 802, 803, 804, 901, 902, 903, 904, 1001, 1002, 1003, 1004, 1101, 1102, 1103, 1104, 1201, 1202, 1203, 1204, 1301, 1302, 1303, 1304, 1401, 1402, 1403, 1404,
-    			105, 106, 107, 108, 205, 206, 207, 208, 305, 306, 307, 308, 405, 406, 407, 408, 505, 506, 507, 508, 605, 606, 607, 608, 705, 706, 707, 708, 805, 806, 807, 808, 905, 906, 907, 908, 1005, 1006, 1007, 1008, 1105, 1106, 1107, 1108, 1205, 1206, 1207, 1208, 1305, 1306, 1307, 1308, 1405, 1406, 1407, 1408],
+                [101, 102, 103, 104, 201, 202, 203, 204, 301, 302, 303, 304, 401, 402, 403, 404, 501, 502, 503, 504, 601, 602, 603, 604, 701, 702, 703, 704, 801, 802, 803, 804, 901, 902, 903, 904, 1001, 1002, 1003, 1004, 1101, 1102, 1103, 1104, 1201, 1202, 1203, 1204, 1301, 1302, 1303, 1304, 1401, 1402, 1403, 1404,
+                105, 106, 107, 108, 205, 206, 207, 208, 305, 306, 307, 308, 405, 406, 407, 408, 505, 506, 507, 508, 605, 606, 607, 608, 705, 706, 707, 708, 805, 806, 807, 808, 905, 906, 907, 908, 1005, 1006, 1007, 1008, 1105, 1106, 1107, 1108, 1205, 1206, 1207, 1208, 1305, 1306, 1307, 1308, 1405, 1406, 1407, 1408],
                 on_change = show_db,
                 key="selected_flat",
-    			)
+                )
 
     with right:
         if flat_num % 100 <= 4:
@@ -643,6 +649,11 @@ with t2:
                     download_Invoice = right.download_button(label="Download Dup. Invoice", data = pdf, file_name= filename, mime='application/octet-stream', disabled = False, on_click = invoice_downloaded)
 
 
+
+
+
+
+    
 
 
 
