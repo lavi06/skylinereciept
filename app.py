@@ -605,31 +605,34 @@ with t2:
     for each in master_database:
         if each[1] == reciept_no:
 
-            IFMS_MARKER = each[-1]
-            if IFMS_MARKER:
-                amount         = float(each[4])
+            flat_num        = each[0]
+            invoice_num     = each[1]
+            invoicename     = each[2]
+            date_invoice    = each[3]
+            amount         = float(each[4])
 
+            mode            = each[5]
+            reference       = each[6]
+            IFMS_MARKER = each[9]
+
+
+            if IFMS_MARKER:
                 _amount = amount
                 gst     = (amount-_amount)
 
+            elif str(flat_num) in ["101","102","103","104","203","204","302","304","404","504","1104","105","106","108","208","1106","1408"]:
+                _amount = amount
+                gst     = (amount-_amount)
             else:
-                amount         = float(each[4])
-
                 _amount = round(amount/1.05*1)
                 gst     = (amount-_amount)
 
             amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
 
-            invoicename     = each[2]
-            flat_num        = each[0]
             if int(flat_num) % 100 <= 4:
                 flat_config = "4 BHK - Tower A - T2"
             else:
                 flat_config = "3 BHK - Tower B - T1"
-            mode            = each[5]
-            reference       = each[6]
-            invoice_num     = each[1]
-            date_invoice    = each[3]
 
             left, right = t2.columns(2)
             with left:
