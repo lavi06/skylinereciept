@@ -79,7 +79,7 @@ def create_record(record):
 
     insert_query = """
     INSERT INTO Reciepts
-    (Flat, Reciept, Name, Date, Amount, Mode, Reference_No, created_by, Cancel, IFMS, Amt, GST)
+    (Flat, Reciept, Name, Date, Amount, Mode, Reference_No, created_by, Cancel, IFMS, "Amt", "GST")
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
@@ -331,7 +331,7 @@ def show_db():
     for x in master_database:
         if (x[0] == st.session_state["selected_flat"]) or (x[0] == str(st.session_state["selected_flat"])):
             # if x[-2] is None or x[-2] == "NaN" or x[-2] is "NaN": 
-            if "Can" not in x[-2]:
+            if "Can" not in x[-4]:
                 database.append(x)
                 print(x)
 
@@ -398,6 +398,7 @@ def invoice_generated():
             st.session_state.success = "Yes"
         except Exception as e:
             print(e)
+
             st.session_state.success = "No"
 
 
@@ -451,7 +452,7 @@ if authentication_status:
     if st.session_state.IFMS_MARKER:
         _amount = amount
         gst = 0
-    elif str(st.session_state["selected_flat"]) in ["101","102","103","104","203","204","302","304","404","504","1104","105","106","108","208","1106","1408"]:
+    elif st.session_state["selected_flat"] in ["101","102","103","104","203","204","302","304","404","504","1104","105","106","108","208","1106","1408"]:
         _amount = amount
         gst = 0
     else:        
@@ -460,7 +461,7 @@ if authentication_status:
 
     st.session_state["_Amount"] = _amount
     st.session_state["GST"]     = gst
-
+    print(st.session_state["GST"])
 
     t1.write(f"Amount : *{_amount}* | GST : {gst}")
 
