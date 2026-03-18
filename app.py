@@ -452,7 +452,7 @@ if authentication_status:
     if st.session_state.IFMS_MARKER:
         _amount = amount
         gst = 0
-    elif st.session_state["selected_flat"] in ["101","102","103","104","203","204","302","304","404","504","1104","105","106","108","208","1106","1408"]:
+    elif str(st.session_state["selected_flat"]) in ["101","102","103","104","203","204","302","304","404","504","1104","105","106","108","208","1106","1408"]:
         _amount = amount
         gst = 0
     else:        
