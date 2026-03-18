@@ -79,8 +79,8 @@ def create_record(record):
 
     insert_query = """
     INSERT INTO Reciepts
-    (Flat, Reciept, Name, Date, Amount, Mode, Reference_No, created_by, Cancel, IFMS)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    (Flat, Reciept, Name, Date, Amount, Mode, Reference_No, created_by, Cancel, IFMS, Amt, GST)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
     conn = psycopg2.connect(DATABASE_URL)
@@ -376,14 +376,14 @@ def invoice_generated():
                 "Reference No": st.session_state.reference,
                 "created_by"  : passcode_key[st.session_state.passcode],
                 "Cancel": "",
-                "IFMS" : st.session_state.IFMS_MARKER
+                "IFMS" : st.session_state.IFMS_MARKER,                
                 }
 
             # create_record(st.session_state.token, json_data)
 
             create_record((str(st.session_state.selected_flat), st.session_state.invoice, st.session_state.invoicename, str(date.today()),
                            str(st.session_state.amount), st.session_state.mode, st.session_state.reference, passcode_key[st.session_state.passcode],
-                           "", st.session_state.IFMS_MARKER))
+                           "", st.session_state.IFMS_MARKER, st.session_state._Amount, st.session_state.GST))
 
             master_data = fetch_records(st.session_state.token, st.session_state.columns)
             st.session_state.master = master_data
@@ -445,12 +445,22 @@ if authentication_status:
     amount_in_words = num2words(amount, lang='en_IN').replace(",","").title()
     t1.write(f"*{amount_in_words}* Only")
 
+
+
+
     if st.session_state.IFMS_MARKER:
         _amount = amount
         gst = 0
-    else:
+    elif st.session_state["selected_flat"] in ["101","102","103","104","203","204","302","304","404","504","1104","105","106","108","208","1106","1408"]:
+        _amount = amount
+        gst = 0
+    else:        
         _amount = round(amount/1.05*1)
         gst     = (amount-_amount)
+
+    st.session_state["_Amount"] = _amount
+    st.session_state["GST"]     = gst
+
 
     t1.write(f"Amount : *{_amount}* | GST : {gst}")
 
